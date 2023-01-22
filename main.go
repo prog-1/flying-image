@@ -20,8 +20,9 @@ type Point struct {
 }
 
 type game struct {
-	last  time.Time
-	image *Image
+	last     time.Time
+	image    *Image
+	trailLen uint
 }
 
 type Image struct {
@@ -29,6 +30,7 @@ type Image struct {
 	pos   Point
 	vel   Point
 	speed float64
+	alfa  float64
 }
 
 func (g *game) Layout(outWidth, outHeight int) (w, h int) { return screenWidth, screenHeight }
@@ -53,13 +55,17 @@ func (i *Image) Update(dtMs float64) {
 		i.vel.x = -i.vel.x
 	case i.pos.y+halfHeight >= float64(screenHeight) || i.pos.y-halfHeight <= 0:
 		i.vel.y = -i.vel.y
+	default:
+		return
 	}
+	i.alfa -= 0.1
 }
 
 func (i *Image) Draw(screen *ebiten.Image) {
 	halfWidth, halfHeight := float64(i.image.Bounds().Dx()/2), float64(i.image.Bounds().Dy()/2)
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(i.pos.x-halfWidth, i.pos.y-halfHeight)
+	op.ColorM.Scale(1, 1, 1, i.alfa)
 	screen.DrawImage(i.image, op)
 }
 
@@ -78,6 +84,7 @@ func NewImage(path string) (*Image, error) {
 		pos:   Point{screenWidth / 2, screenHeight / 2},
 		vel:   Point{math.Cos(rad) * speed, math.Sin(rad) * speed},
 		speed: speed,
+		alfa:  1,
 	}, nil
 }
 
@@ -90,9 +97,14 @@ func main() {
 	if img, err = NewImage("Peace.png"); err != nil {
 		log.Fatal(err)
 	}
-	g := game{time.Now(), img}
+	g := game{time.Now(), img, 10}
 
 	if err := ebiten.RunGame(&g); err != nil {
 		log.Fatal(err)
 	}
 }
+
+// How to implement trail?
+// Store last n positions of the image in the n-sized queue
+// At each of these positions draw the same image, but with alfa = 255/n*i, where i is the index of the element
+// At each update add new position to the front of the queue
