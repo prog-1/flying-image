@@ -4,7 +4,6 @@ import (
 	"log"
 	"math"
 	"math/rand"
-	"strconv"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -12,8 +11,8 @@ import (
 )
 
 const (
-	screenWidth  = 640
-	screenHeight = 480
+	screenWidth  = 2560
+	screenHeight = 1440
 )
 
 type Point struct {
@@ -75,7 +74,6 @@ func (g *game) Draw(screen *ebiten.Image) {
 		op := &ebiten.DrawImageOptions{}
 		op.GeoM.Translate(cur.pos.x-halfWidth, cur.pos.y-halfHeight)
 		alfa := float64(1) / float64(i+1)
-		ebitenutil.DebugPrint(screen, strconv.FormatFloat(alfa, 'f', -1, 32))
 		op.ColorM.Scale(1, 1, 1, alfa)
 		screen.DrawImage(g.image.image, op)
 	}
@@ -120,11 +118,11 @@ func NewImage(path string) (*Image, error) {
 
 func main() {
 	ebiten.SetWindowSize(screenWidth, screenHeight)
-	ebiten.SetWindowTitle("Peace")
+	ebiten.SetWindowTitle("BRB")
 
 	var img *Image
 	var err error
-	if img, err = NewImage("Peace.png"); err != nil {
+	if img, err = NewImage("BRB.png"); err != nil {
 		log.Fatal(err)
 	}
 	g := game{time.Now(), img, &List{maxLen: 100}}
@@ -133,10 +131,3 @@ func main() {
 		log.Fatal(err)
 	}
 }
-
-// How to implement trail?
-// Store last n positions of the image in the n-sized queue
-// At each update add new position to the front of the queue
-// At each of these positions draw the same image, but with alfa = 255/n*i, where i is the index of the element
-//alfa := float64(1) / float64(g.trail.len) * float64(i+1)
-// No, it doesn't work as expected..
