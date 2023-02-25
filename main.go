@@ -1,6 +1,7 @@
 package main
 
 import (
+	"image/color"
 	_ "image/png"
 	"log"
 	"math"
@@ -20,10 +21,16 @@ type Point struct {
 	x, y float64
 }
 
+type trail struct {
+	pos   Point
+	color color.Alpha
+}
+
 type img struct {
-	img *ebiten.Image
-	pos Point
-	vel Point
+	img   *ebiten.Image
+	pos   Point
+	vel   Point
+	trail []*trail
 }
 
 type Game struct {
@@ -82,9 +89,28 @@ func (img *img) Update(dtMs float64, fieldWidth, fieldHeight int) {
 		img.pos.y = float64(fieldHeight - h)
 		img.vel.y = -img.vel.y
 	}
+
+	img.trail = append(img.trail, &trail{
+		pos:   img.pos,
+		color: color.Alpha{100},
+	})
+	for i := len(img.trail) - 1; i >= 0; i-- {
+		img.trail[i].color.A -= 10
+		if img.trail[i].color.A == 0 {
+			img.trail = img.trail[:i]
+		}
+	}
+	if len(img.trail) > 10 {
+		img.trail = img.trail[1:]
+	}
 }
 
 func (img *img) Draw(screen *ebiten.Image) {
+	for _, t := range img.trail {
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Translate(t.pos.x, t.pos.y)
+		screen.DrawImage(img.img, op)
+	}
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(img.pos.x, img.pos.y)
 	screen.DrawImage(img.img, op)
