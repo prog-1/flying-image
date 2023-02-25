@@ -106,16 +106,32 @@ func (img *img) Update(dtMs float64, fieldWidth, fieldHeight int) {
 }
 
 func (img *img) Draw(screen *ebiten.Image) {
+	w, h := img.img.Size()
 	for _, t := range img.trail {
 		op := &ebiten.DrawImageOptions{}
+		//op.GeoM.Translate(-float64(w)/2, -float64(h)/2)
+		//op.GeoM.Rotate(float64(rand.Intn(360)) * 2 * math.Pi / 360)
+		// when track also rotates, it looks weird
 		op.GeoM.Translate(t.pos.x, t.pos.y)
 		screen.DrawImage(img.img, op)
 	}
 	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Translate(-float64(w)/2, -float64(h)/2)
+	op.GeoM.Rotate(float64(rand.Intn(360)) * 2 * math.Pi / 360)
 	op.GeoM.Translate(img.pos.x, img.pos.y)
 	screen.DrawImage(img.img, op)
 }
 
+/*
+	for _, rot := range g.rect {
+
+w, h := rot.Size()
+op := &ebiten.DrawImageOptions{}
+op.GeoM.Translate(-float64(w)/2, -float64(h)/2)
+op.GeoM.Rotate(float64(rand.Intn(g.count)%360) * 2 * math.Pi / 360)
+op.GeoM.Translate(float64(screenWidth/2), screenHeight/2)
+screen.DrawImage(rot.Image, op)
+*/
 func (g *Game) Update() error {
 	t := time.Now()
 	dt := float64(t.Sub(g.last).Milliseconds())
